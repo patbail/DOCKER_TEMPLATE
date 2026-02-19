@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+  ServerName localhost
+  DocumentRoot ${APACHE_DOCUMENT_ROOT}
+
+  <Directory ${APACHE_DOCUMENT_ROOT}>
+    Options FollowSymLinks
+    AllowOverride ${ALLOW_OVERRIDE}
+    Require all granted
+  </Directory>
+
+  ErrorLog /proc/self/fd/2
+  CustomLog /proc/self/fd/1 combined
+</VirtualHost>

@@ -1,0 +1,61 @@
+services:
+  web:
+    build: ./docker/php
+    env_file: [.env]
+    environment:
+      APACHE_DOCUMENT_ROOT: ${APACHE_DOCUMENT_ROOT}
+      ALLOW_OVERRIDE: ${ALLOW_OVERRIDE}
+    volumes:
+      - ./src:/var/www/html
+    networks: [devproxy]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_SLUG}.rule=Host(`${APP_HOST}`)
+      - traefik.http.routers.${PROJECT_SLUG}.entrypoints=web
+      - traefik.http.services.${PROJECT_SLUG}.loadbalancer.server.port=80
+    depends_on: [db]
+
+  db:
+    image: ghcr.io/mariadb/mariadb:10.11.14-jammy
+    env_file: [.env]
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks: [devproxy]
+
+  adminer:
+    image: adminer:4
+    networks: [devproxy]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_SLUG}-db.rule=Host(`${DB_UI_HOST}`)
+      - traefik.http.routers.${PROJECT_SLUG}-db.entrypoints=web
+      - traefik.http.services.${PROJECT_SLUG}-db.loadbalancer.server.port=8080
+    depends_on: [db]
+
+  # Optional Vite dev server (Vue/React). Enable via profile.
+  node:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./src:/app
+    command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0 --port ${VITE_PORT}"
+    networks: [devproxy]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${PROJECT_SLUG}-vite.rule=Host(`${VITE_HOST}`)
+      - traefik.http.routers.${PROJECT_SLUG}-vite.entrypoints=web
+      - traefik.http.services.${PROJECT_SLUG}-vite.loadbalancer.server.port=5173
+    profiles: ["frontend"]
+    depends_on: [web]
+
+networks:
+  devproxy:
+    external: true
+
+volumes:
+  db_data:
