@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN set -eux; \
   apt-get update -o Acquire::Retries=5; \
   apt-get install -y --no-install-recommends \
-    libzip-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev \
+    tzdata libzip-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev \
     ca-certificates; \
   rm -rf /var/lib/apt/lists/*
 

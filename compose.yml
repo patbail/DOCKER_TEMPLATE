@@ -3,6 +3,7 @@ services:
     build: ./docker/php
     env_file: [.env]
     environment:
+      TZ: ${TZ}
       APACHE_DOCUMENT_ROOT: ${APACHE_DOCUMENT_ROOT}
       ALLOW_OVERRIDE: ${ALLOW_OVERRIDE}
     volumes:
@@ -19,6 +20,7 @@ services:
     image: ghcr.io/mariadb/mariadb:10.11.14-jammy
     env_file: [.env]
     environment:
+      TZ: ${TZ}
       MARIADB_DATABASE: ${DB_DATABASE}
       MARIADB_USER: ${DB_USERNAME}
       MARIADB_PASSWORD: ${DB_PASSWORD}
